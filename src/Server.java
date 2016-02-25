@@ -13,6 +13,8 @@ public class Server implements Runnable {
 	private static ServerSocket sock;
 	private Socket socket;
 	public Vector<Group> Groups;
+	public static String endOfMessageChar = "./end";
+
 
 	public Server(){
 		Groups = new Vector<Group>();
@@ -37,62 +39,86 @@ public class Server implements Runnable {
 	}
 	@Override
 	public void run() {
+		synchronized(this){
 
-		try{
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					socket.getInputStream()));
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), 
-					true);
-			String input = "";
-			while(true){
-				input = in.readLine();
-				if(input.contains("post")){
-					String groupName = input.substring(5);
-					if(!isControlCharLegal(groupName)){
-						out.println("Error: invalid group name");
-						break;
-					}
-					else{
-						out.println("ok");
-						input = in.readLine();
-						if(input.contains("id")){
-							String userID = input.substring(3);
-							out.println("ok");
-							String header = in.readLine();
-							String message = "";
-							while(!(input = in.readLine()).equals(post.endOfMessageChar)){
-								message = message + "\n"+input;
-							}
-							message = message.substring(1);
-							addMessage(groupName, new Message(userID, message, header));
-
+			try{
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						socket.getInputStream()));
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), 
+						true);
+				String input = "";
+				while(true){
+					input = in.readLine();
+					String[] cmd = input.split(" +");
+					if(cmd[0].equalsIgnoreCase("post")&&cmd.length>=2){
+						
+						String groupName = cmd[1];
+						if(!isControlCharLegal(groupName)||cmd.length!=2){
+							out.println("Error: invalid group name");
+							break;
 						}
 						else{
-							out.println("Error: invalid command");
+							out.println("ok");
+							input = in.readLine();
+							String[] idarr = input.split(" +");
+							if(idarr[0].equalsIgnoreCase("id")&&idarr.length>=2){
+								String userID = idarr[1];
+								out.println("ok");
+								String header = in.readLine();
+								String message = "";
+								while(!(input = in.readLine()).contains(endOfMessageChar)){
+									message = message + "\n"+input;
+								}
+								message = message.substring(1);
+								addMessage(groupName, new Message(userID, message, header));
+
+							}
+							else{
+								out.println("Error: invalid command");
+							}
 						}
+						out.println("exit");
+						break;
 					}
-					out.println("exit");
-					break;
-				}
-
-
-
-				if(input.equalsIgnoreCase("Exit")){
-					out.println("Client shutting down.");
-					try{
-						socket.close();
-					} catch (IOException e) {
-						System.out.println("Error closing socket.");
+					
+					
+					if(cmd[0].equalsIgnoreCase("get")&&cmd.length>=2){
+						
+						String groupName = cmd[1];
+						Group group = getGroup(groupName);
+						if(!isControlCharLegal(groupName)||cmd.length!=2||group==null){
+							out.println("Error: invalid group name");
+							break;
+						}
+						else{
+							out.println("ok");
+							out.println("messages: "+group.messages.size());
+							for(int i = 0;i<group.messages.size()-1;i++){
+								String send = group.messages.get(i)+"";
+								out.println(send);
+								out.println();
+							}
+							out.println(group.messages.get(group.messages.size()-1));
+							out.println(endOfMessageChar);
+						}
+						break;
 					}
-					Thread.currentThread().interrupt();
-					return;
-				}
+					
+					
+					else{
+						out.println("Error: invalid command");
+						break;
+					}
 
-				out.println("I got your message.");
+
+
+
+
+				}
+			} catch (IOException e) {
+				System.out.println("Read failed");
+				System.exit(-1);
 			}
-		} catch (IOException e) {
-			System.out.println("Read failed");
-			System.exit(-1);
 		}
 	}
 
@@ -117,7 +143,14 @@ public class Server implements Runnable {
 
 	}
 
-
+	public synchronized Group getGroup(String groupName){
+		for(Group g : Groups){
+			if(g.groupName.equals(groupName)){
+				return g;
+			}
+		}
+		return null;
+	}
 	public static void main(String[] args){
 		args = new String[2];
 		args[0] = "-p";

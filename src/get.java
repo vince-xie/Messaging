@@ -5,8 +5,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Scanner;
 
-public class post{
+public class get{
 	private final static int DEFAULT_PORT = 7652;
 	private static  Socket socket;
 	public static String endOfMessageChar = "./end";
@@ -21,33 +22,29 @@ public class post{
 		return -1;
 	}
 	
-	private  static void talkToServer(Socket s, String groupName, String message){
+	private  static void talkToServer(Socket s, String groupName){
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					s.getInputStream()));
 			PrintWriter out = new PrintWriter(s.getOutputStream(), 
 					true);
 			
-			out.println("post "+groupName);
+			out.println("get "+groupName);
 			String status = in.readLine();
 			if(status.toLowerCase().contains("error")){
 				System.out.println(status);
 				System.exit(1);
 			}
 			else if(status.equalsIgnoreCase("ok")){
-				out.println("id "+System.getProperty("user.name"));
-				status = in.readLine();
-				if(status.contains("Error")){
+//				Scanner sc = new Scanner(new InputStreamReader(s.getInputStream()));
+//				sc.useDelimiter(endOfMessageChar);
+				while(!(status = in.readLine()).equals(endOfMessageChar)){
 					System.out.println(status);
-					System.exit(1);
+//					if(sc.hasNext()){
+//						System.out.println();
+//					}
 				}
-				else if(status.equalsIgnoreCase("ok")){
-					out.println(formatMessage(s, System.getProperty("user.name"), message));
-					status = in.readLine();
-					if(status.equals("exit")){
-						System.exit(0);
-					}
-				}
+
 
 			}
 		} catch (IOException e) {
@@ -67,6 +64,8 @@ public class post{
 	}
 	public static void main(String... args){
 		// set default conditions
+		args = new String[1];
+		args[0] = "test";
 		String hostname = "localhost";
 		int port = DEFAULT_PORT;
 		String groupName = "";
@@ -123,23 +122,9 @@ public class post{
 			System.out.println("Format Error: post [-h hostname] [-p port] groupname");
 			return;
 		}
-
 		try{
 			socket = new Socket(hostname, port);
-			BufferedReader br = 
-                    new BufferedReader(new InputStreamReader(System.in));
-			String message = "";
-			while(true){
-				String nextLine = br.readLine();
-				if(nextLine.equals(endOfMessageChar)){
-					talkToServer(socket, groupName, message+endOfMessageChar);
-					return;
-				}
-				message = message + nextLine+"\n";
-				if(message.equalsIgnoreCase("Exit")){
-					return;
-				}
-			}
+			talkToServer(socket, groupName);
 		} catch (IOException e){
 			System.out.println("Error creating socket.");
 		}
