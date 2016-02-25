@@ -162,9 +162,6 @@ public class Server implements Runnable {
 		return null;
 	}
 	public static void main(String[] args){
-		args = new String[2];
-		args[0] = "-p";
-		args[1] = "7652";
 		if(args.length == 2 && args[0].equals("-p")){
 			try{
 				port = Integer.parseInt((args[1]));

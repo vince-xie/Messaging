@@ -46,9 +46,6 @@ public class get{
 	
 
 	public static void main(String... args){
-		// set default conditions
-		args = new String[1];
-		args[0] = "test";
 		String hostname = "localhost";
 		int port = DEFAULT_PORT;
 		String groupName = "";
