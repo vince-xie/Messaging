@@ -4,6 +4,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Vector;
 
 public class Server implements Runnable {
@@ -64,13 +66,12 @@ public class Server implements Runnable {
 							if(idarr[0].equalsIgnoreCase("id")&&idarr.length>=2){
 								String userID = idarr[1];
 								out.println("ok");
-								String header = in.readLine();
 								String message = "";
 								while(!(input = in.readLine()).contains(endOfMessageChar)){
 									message = message + "\n"+input;
 								}
 								message = message.substring(1);
-								addMessage(groupName, new Message(userID, message, header));
+								addMessage(groupName, new Message(userID, message, formatHeader(socket, userID)));
 
 							}
 							else{
@@ -122,6 +123,15 @@ public class Server implements Runnable {
 		}
 	}
 
+	
+	private static String formatHeader(Socket s, String id){
+		SimpleDateFormat f = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+		Calendar c = Calendar.getInstance();
+		c.setTimeInMillis(System.currentTimeMillis());	
+		String m = "From "+id+" "+s.getRemoteSocketAddress().toString()+" "+f.format(c.getTime());
+		return m;
+	}
+	
 	protected void finalize(){
 		try{
 			sock.close();
