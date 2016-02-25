@@ -30,7 +30,7 @@ public class Server implements Runnable {
 	private boolean isControlCharLegal(String string){
 		for(char c:string.toCharArray()){
 			if(!Character.isISOControl(c)){
-				return false;
+//				return false;
 			}
 		}
 		return true;
