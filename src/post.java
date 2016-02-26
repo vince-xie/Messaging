@@ -55,7 +55,7 @@ public class post{
 		// arguments can't exceed 5, be under 1 and cannot be even
 		if(args.length > 5 || args.length < 1 || args.length == 2 || args.length == 4){
 			System.out.println("Format Error: post [-h hostname] [-p port] groupname");
-			return;
+			System.exit(1);
 		}
 
 		// if only 1 argument
@@ -79,7 +79,7 @@ public class post{
 					groupName = args[2];
 				}else{
 					System.out.println("Format Error: post [-h hostname] [-p port] groupname");
-					return;
+					System.exit(1);
 				}
 			}
 
@@ -92,17 +92,17 @@ public class post{
 					groupName = args[4];
 				}else{
 					System.out.println("Format Error: post [-h hostname] [-p port] groupname");
-					return;
+					System.exit(1);
 				}
 			}
 
 		} catch (NumberFormatException e){
 			System.out.println("Format Error: post [-h hostname] [-p port] groupname");
 			System.out.println("Hint: Port number must be a #");
-			return;
+			System.exit(1);
 		} catch (Exception e){
 			System.out.println("Format Error: post [-h hostname] [-p port] groupname");
-			return;
+			System.exit(1);
 		}
 
 		try{
@@ -123,6 +123,7 @@ public class post{
 			}
 		} catch (IOException e){
 			System.out.println("Error creating socket.");
+			System.exit(1);
 		}
 
 	}
