@@ -4,19 +4,20 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-
+//Group Members: Bharath Kannan, Vincent Xie, Augustus Chang
 public class post{
 	private final static int DEFAULT_PORT = 7652;
 	private static  Socket socket;
 	public static String endOfMessageChar = "./end";
 
+	//Handles all communication between Post client and Server
 	private  static void talkToServer(Socket s, String groupName, String message){
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					s.getInputStream()));
 			PrintWriter out = new PrintWriter(s.getOutputStream(), 
 					true);
-			
+
 			out.println("post "+groupName);
 			String status = in.readLine();
 			if(status.toLowerCase().contains("error")){
@@ -64,12 +65,12 @@ public class post{
 		}
 
 		// We know that the arg.length is 3 or 5. Check accordingly
-		
+
 		try{
 
 			String firstCommand = args[0];
 			if(args.length == 3){
-			
+
 				if(firstCommand.equals("-h")){
 					hostname = args[1];
 					groupName = args[2];
@@ -107,7 +108,7 @@ public class post{
 		try{
 			socket = new Socket(hostname, port);
 			BufferedReader br = 
-                    new BufferedReader(new InputStreamReader(System.in));
+					new BufferedReader(new InputStreamReader(System.in));
 			String message = "";
 			while(true){
 				String nextLine = br.readLine();
@@ -125,5 +126,6 @@ public class post{
 		}
 
 	}
+
 
 }

@@ -8,7 +8,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Vector;
 
-public class Server implements Runnable {
+
+// Group Members: Bharath Kannan, Vincent Xie, Augustus Chang
+public class server implements Runnable {
 
 	private final static int DEFAULT_PORT = 7652;
 	private static int port;
@@ -18,44 +20,37 @@ public class Server implements Runnable {
 	public static String endOfMessageChar = "./end";
 
 
-	public Server(){
+	public server(){
 		Groups = new Vector<Group>();
 	}
 
-	public Server(Socket socket){
+	public server(Socket socket){
 		this.socket = socket;
 		Groups = new Vector<Group>();
 	}
-
+	
+	//Sets the server's socket
 	public void setSocket(Socket sock){
 		socket = sock;
 	}
 
-	private boolean isControlCharLegal(String string){
-		for(char c:string.toCharArray()){
-			if(!Character.isISOControl(c)){
-//				return false;
-			}
-		}
-		return true;
-	}
 	@Override
 	public void run() {
 		synchronized(this){
-
+			PrintWriter out = null;
 			try{
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						socket.getInputStream()));
-				PrintWriter out = new PrintWriter(socket.getOutputStream(), 
+				out = new PrintWriter(socket.getOutputStream(), 
 						true);
 				String input = "";
 				while(true){
 					input = in.readLine();
 					String[] cmd = input.split(" +");
-					if(cmd[0].equalsIgnoreCase("post")&&cmd.length>=2){
+						if(cmd[0].equalsIgnoreCase("post")&&cmd.length>=2){
 						
 						String groupName = cmd[1];
-						if(!isControlCharLegal(groupName)||cmd.length!=2){
+						if(cmd.length!=2){
 							out.println("Error: invalid group name");
 							break;
 						}
@@ -70,7 +65,12 @@ public class Server implements Runnable {
 								while(!(input = in.readLine()).contains(endOfMessageChar)){
 									message = message + "\n"+input;
 								}
-								message = message.substring(1);
+								if(message.length()>=2){
+									message = message.substring(1);
+								}
+								else{
+									message = "";
+								}
 								addMessage(groupName, new Message(userID, message, formatHeader(socket, userID)));
 
 							}
@@ -87,13 +87,13 @@ public class Server implements Runnable {
 						
 						String groupName = cmd[1];
 						Group group = getGroup(groupName);
-						if(!isControlCharLegal(groupName)||cmd.length!=2||group==null){
+						if(cmd.length!=2||group==null){
 							out.println("Error: invalid group name");
 							break;
 						}
 						else{
 							out.println("ok");
-							out.println("messages: "+group.messages.size());
+							out.println(group.messages.size()+" messages");
 							for(int i = 0;i<group.messages.size()-1;i++){
 								String send = group.messages.get(i)+"";
 								out.println(send);
@@ -110,20 +110,17 @@ public class Server implements Runnable {
 						out.println("Error: invalid command");
 						break;
 					}
-
-
-
-
-
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				System.out.println("Read failed");
-				System.exit(-1);
+				if(out!=null){
+					out.println("exit");
+				}
 			}
 		}
 	}
 
-	
+	//Formats the header of a message.
 	private static String formatHeader(Socket s, String id){
 		SimpleDateFormat f = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 		Calendar c = Calendar.getInstance();
@@ -139,7 +136,8 @@ public class Server implements Runnable {
 			System.out.println("Error closing socket.");
 		}
 	}
-
+	
+	//Adds a message to the specified group.
 	public synchronized void addMessage(String groupName, Message message){
 		for(Group g: Groups){
 			if(g.groupName.equalsIgnoreCase(groupName)){
@@ -153,6 +151,7 @@ public class Server implements Runnable {
 
 	}
 
+	//Returns the specified group.
 	public synchronized Group getGroup(String groupName){
 		for(Group g : Groups){
 			if(g.groupName.equals(groupName)){
@@ -172,14 +171,14 @@ public class Server implements Runnable {
 		} else if(args.length == 0){
 			port = DEFAULT_PORT;
 		} else {
-			System.out.println("Usage: Server [-p port]");
+			System.out.println("Format Error: Server [-p port]");
 			return;
 		}
 		try{
 			sock = new ServerSocket(port);
 			System.out.println("Server is ready for connections " +
 					"on port " + port + ".");
-			Server server = new Server();
+			server server = new server();
 			while(true){
 				Socket socket = sock.accept();
 				server.setSocket(socket);

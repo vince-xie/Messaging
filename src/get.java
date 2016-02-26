@@ -4,14 +4,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-
+//Group Members: Bharath Kannan, Vincent Xie, Augustus Chang
 public class get{
 	private final static int DEFAULT_PORT = 7652;
 	private static  Socket socket;
 	public static String endOfMessageChar = "./end";
 	
 
-	
+	//Handles all communication between Post client and Server
 	private  static void talkToServer(Socket s, String groupName){
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -26,16 +26,9 @@ public class get{
 				System.exit(1);
 			}
 			else if(status.equalsIgnoreCase("ok")){
-//				Scanner sc = new Scanner(new InputStreamReader(s.getInputStream()));
-//				sc.useDelimiter(endOfMessageChar);
 				while(!(status = in.readLine()).equals(endOfMessageChar)){
 					System.out.println(status);
-//					if(sc.hasNext()){
-//						System.out.println();
-//					}
 				}
-
-
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
